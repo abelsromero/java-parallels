@@ -6,3 +6,9 @@ Set of utilities to ease running some common tasks with parallelism.
 
 Allows parallels operations with files.
 For example moving files in groups.
+
+== ParallelExecutor
+
+Allows running parallel executions of small pieces of code.
+
+This is specially useful to run small performance and concurrency tests against backends (i.e. API, database...).
