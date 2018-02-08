@@ -1,0 +1,8 @@
+= Java Parallels
+
+Set of utilities to ease running some common tasks with parallelism.
+
+== ParallelFiles
+
+Allows parallels operations with files.
+For example moving files in groups.
