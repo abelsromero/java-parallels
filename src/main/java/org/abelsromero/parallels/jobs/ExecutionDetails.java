@@ -7,11 +7,15 @@ import lombok.Getter;
 @Getter
 public class ExecutionDetails {
 
-    /**
-     * In milliseconds
-     */
+    private JobsDetails successfulJobs;
+    private JobsDetails failedJobs;
+
+    // milliseconds
     private long time;
-    private long successfulOperations;
-    private long failedOperations;
+    private Double jobsPerSecond;
+
+    public int getTotalJobsCount() {
+        return successfulJobs.getCount() + failedJobs.getCount();
+    }
 
 }
