@@ -1,6 +1,7 @@
 package org.abelsromero.parallels.jobs;
 
 import lombok.SneakyThrows;
+import org.abelsromero.parallels.jobs.internal.JobSummary;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -13,9 +14,9 @@ import java.util.stream.LongStream;
 public class ParallelExecutor {
 
     private final ExecutorService executor;
-    private final long executions;
+    private final int executions;
 
-    public ParallelExecutor(int workers, long executions) {
+    public ParallelExecutor(int workers, int executions) {
         executor = Executors.newFixedThreadPool(workers);
         this.executions = executions;
     }
@@ -23,40 +24,78 @@ public class ParallelExecutor {
     @SneakyThrows
     public ExecutionDetails run(Callable<Boolean> callable) {
 
-        final List<Callable<Boolean>> callables = LongStream
+        final List<Callable<JobSummary>> callables = LongStream
             .rangeClosed(1, executions)
-            .mapToObj(i -> callable)
+            .mapToObj(i -> (Callable<JobSummary>) () -> {
+                long time = System.currentTimeMillis();
+                Boolean succeed = Boolean.FALSE;
+                try {
+                    succeed = callable.call();
+                } catch (Exception e) {
+
+                }
+                time = System.currentTimeMillis() - time;
+                return succeed ? JobSummary.success(time) : JobSummary.failure(time);
+            })
             .collect(Collectors.toList());
 
-        long init = System.currentTimeMillis();
-        final List<Future<Boolean>> results = executor.invokeAll(callables);
+        long startTime = System.currentTimeMillis();
+        final List<Future<JobSummary>> results = executor.invokeAll(callables);
         executor.shutdown();
         // TODO should log the result of awaitTermination
         executor.awaitTermination(60, TimeUnit.MINUTES);
 
-        final Integer failedOperations = results.stream()
-            .map(this::getBooleanAsInt)
-            .reduce((v1, v2) -> v1 + v2)
-            .get();
-
-        return ExecutionDetails.builder()
-            .time(System.currentTimeMillis() - init)
-            .successfulOperations(executions - failedOperations)
-            .failedOperations(failedOperations)
-            .build();
+        return processExecutionResults(results, System.currentTimeMillis() - startTime);
     }
 
-    /**
-     * @return true -> 0, false -> 1
-     */
-    private Integer getBooleanAsInt(Future<Boolean> r) {
-        try {
-            return r.get(60, TimeUnit.SECONDS) ? 0 : 1;
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            System.out.println("Error getting value");
-            e.printStackTrace();
-            return 1;
+    private ExecutionDetails processExecutionResults(List<Future<JobSummary>> results, long totalTime) throws InterruptedException, ExecutionException {
+        // Used good old loop for performance
+        long successMinTime = 0;
+        long successMaxTime = 0;
+        long successfulTimeSum = 0;
+
+        long failureMinTime = 0;
+        long failureMaxTime = 0;
+        long failureTimeSum = 0;
+        int failedOperations = 0;
+
+        for (Future<JobSummary> futureJobSummary : results) {
+            final JobSummary job = futureJobSummary.get();
+            if (job.isSuccessful()) {
+                if (job.getExecutionTime() > successMaxTime)
+                    successMaxTime = job.getExecutionTime();
+                if (job.getExecutionTime() < successMinTime || successMinTime == 0)
+                    successMinTime = job.getExecutionTime();
+                successfulTimeSum += job.getExecutionTime();
+            } else {
+                if (job.getExecutionTime() > failureMaxTime) {
+                    failureMaxTime = job.getExecutionTime();
+                }
+                if (job.getExecutionTime() < failureMinTime || failureMinTime == 0) {
+                    failureMinTime = job.getExecutionTime();
+                }
+                failureTimeSum += job.getExecutionTime();
+                failedOperations++;
+            }
         }
+
+        final int successfullOperations = executions - failedOperations;
+        return ExecutionDetails.builder()
+            .time(totalTime)
+            .jobsPerSecond(totalTime > 0 ? (executions / (double) (totalTime / 1000)) : 0)
+            .successfulJobs(JobsDetails.builder()
+                .minTime(successMinTime)
+                .maxTime(successMaxTime)
+                .avgTime(successfullOperations > 0 ? successfulTimeSum / successfullOperations : 0)
+                .count(successfullOperations)
+                .build())
+            .failedJobs(JobsDetails.builder()
+                .minTime(failureMinTime)
+                .maxTime(failureMaxTime)
+                .avgTime(failedOperations > 0 ? failureTimeSum / failedOperations : 0)
+                .count(failedOperations)
+                .build())
+            .build();
     }
 
 }
