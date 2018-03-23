@@ -66,4 +66,11 @@
     </plugins>
   </build>
 
+  <distributionManagement>
+    <repository>
+      <id>repo</id>
+      <url>${distribution.url}</url>
+    </repository>
+  </distributionManagement>
+
 </project>

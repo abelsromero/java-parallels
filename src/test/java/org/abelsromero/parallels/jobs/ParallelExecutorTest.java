@@ -32,7 +32,10 @@ public class ParallelExecutorTest {
         final int executions = 1000;
         // when
         final ParallelExecutor executor = new ParallelExecutor(workers, executions);
-        final ExecutionDetails details = executor.run(() -> TRUE);
+        final ExecutionDetails details = executor.run(() -> {
+            Thread.sleep(1l);
+            return TRUE;
+        });
         // then
         assertThat(details.getSuccessfulJobs().getCount(), equalTo(1000));
         assertThat(details.getFailedJobs().getCount(), equalTo(0));
