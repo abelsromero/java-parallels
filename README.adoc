@@ -2,12 +2,43 @@
 
 Set of utilities to ease running some common tasks with parallelism.
 
-== ParallelFiles
+== Usage
+
+The project is available through link:https://jitpack.io/[].
+To use the master version for example, with maven, just:
+
+. Add JitPack's repository your `pom.xml`.
++
+[source,xml]
+----
+<repositories>
+  <repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+----
+
+. The projects `master` dependency.
++
+[source,xml]
+----
+<dependency>
+  <groupId>com.github.abelsromero</groupId>
+  <artifactId>java-parallels</artifactId>
+  <version>master-SNAPSHOT</version>
+</dependency>
+----
+
+
+== Features
+
+=== ParallelFiles
 
 Allows parallels operations with files.
 For example moving files in groups.
 
-== ParallelExecutor
+=== ParallelExecutor
 
 Allows running parallel executions of small pieces of code.
 
