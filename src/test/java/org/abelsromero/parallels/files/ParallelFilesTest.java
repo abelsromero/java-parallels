@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThat;
 public class ParallelFilesTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void should_fail_if_destination_is_not_a_directory() {
+    public void should_fail_if_destination_is_not_a_directory() throws InterruptedException {
         // given
         File file = getFileFromClasspath("ruby.png");
         // when
@@ -31,7 +31,7 @@ public class ParallelFilesTest {
     }
 
     @Test
-    public void should_move_a_single_file() {
+    public void should_move_a_single_file() throws InterruptedException {
         // given
         final File source = getFileFromClasspath("ruby.png");
         final File file = new File(getTestDirectory(), source.getName());
@@ -47,7 +47,7 @@ public class ParallelFilesTest {
     }
 
     @Test
-    public void should_move_multiple_files() {
+    public void should_move_multiple_files() throws InterruptedException {
         // given
         final String testDirectory = getTestDirectory();
         final File[] sources = new File[]{

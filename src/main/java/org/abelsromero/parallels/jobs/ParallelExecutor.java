@@ -1,7 +1,6 @@
 package org.abelsromero.parallels.jobs;
 
 import lombok.SneakyThrows;
-import org.abelsromero.parallels.jobs.internal.JobSummary;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -61,41 +60,30 @@ public class ParallelExecutor {
 
         for (Future<JobSummary> futureJobSummary : results) {
             final JobSummary job = futureJobSummary.get();
-            if (job.isSuccessful()) {
-                if (job.getExecutionTime() > successMaxTime)
-                    successMaxTime = job.getExecutionTime();
-                if (job.getExecutionTime() < successMinTime || successMinTime == 0)
-                    successMinTime = job.getExecutionTime();
-                successfulTimeSum += job.getExecutionTime();
+            if (job.successful()) {
+                if (job.executionTime() > successMaxTime)
+                    successMaxTime = job.executionTime();
+                if (job.executionTime() < successMinTime || successMinTime == 0)
+                    successMinTime = job.executionTime();
+                successfulTimeSum += job.executionTime();
             } else {
-                if (job.getExecutionTime() > failureMaxTime) {
-                    failureMaxTime = job.getExecutionTime();
+                if (job.executionTime() > failureMaxTime) {
+                    failureMaxTime = job.executionTime();
                 }
-                if (job.getExecutionTime() < failureMinTime || failureMinTime == 0) {
-                    failureMinTime = job.getExecutionTime();
+                if (job.executionTime() < failureMinTime || failureMinTime == 0) {
+                    failureMinTime = job.executionTime();
                 }
-                failureTimeSum += job.getExecutionTime();
+                failureTimeSum += job.executionTime();
                 failedOperations++;
             }
         }
 
-        final int successfullOperations = executions - failedOperations;
+        final int successfulOperations = executions - failedOperations;
         return ExecutionDetails.builder()
             .time(totalTime)
             .jobsPerSecond(totalTime > 0 ? (executions / (double) (totalTime / 1000)) : 0)
-            .successfulJobs(JobsDetails.builder()
-                .minTime(successMinTime)
-                .maxTime(successMaxTime)
-                .avgTime(successfullOperations > 0 ? successfulTimeSum / successfullOperations : 0)
-                .count(successfullOperations)
-                .build())
-            .failedJobs(JobsDetails.builder()
-                .minTime(failureMinTime)
-                .maxTime(failureMaxTime)
-                .avgTime(failedOperations > 0 ? failureTimeSum / failedOperations : 0)
-                .count(failedOperations)
-                .build())
+            .successfulJobs(new JobsDetails(successfulOperations, successMinTime, successMaxTime, successfulOperations > 0 ? successfulTimeSum / successfulOperations : 0))
+            .failedJobs(new JobsDetails(failedOperations, failureMinTime, failureMaxTime, failedOperations > 0 ? failureTimeSum / failedOperations : 0))
             .build();
     }
-
 }

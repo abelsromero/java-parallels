@@ -1,7 +1,5 @@
 package org.abelsromero.parallels.files;
 
-import lombok.SneakyThrows;
-
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.*;
@@ -21,10 +19,9 @@ public class ParallelFiles {
 
     /**
      * Moves all files to a destination directory.
-     * If the destination directory does not exists, it will be created.
+     * If the destination directory does not exist, it will be created.
      */
-    @SneakyThrows
-    public void moveFiles(File destination, File... files) {
+    public void moveFiles(File destination, File... files) throws InterruptedException {
 
         if (!destination.exists())
             destination.mkdirs();
@@ -42,5 +39,4 @@ public class ParallelFiles {
         executor.shutdown();
         executor.awaitTermination(30, TimeUnit.SECONDS);
     }
-
 }

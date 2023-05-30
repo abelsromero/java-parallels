@@ -19,8 +19,8 @@ public class ParallelExecutorTest {
         final ParallelExecutor executor = new ParallelExecutor(1, 1);
         final ExecutionDetails details = executor.run(() -> TRUE);
         // then
-        assertThat(details.getSuccessfulJobs().getCount(), equalTo(1));
-        assertThat(details.getFailedJobs().getCount(), equalTo(0));
+        assertThat(details.getSuccessfulJobs().count(), equalTo(1));
+        assertThat(details.getFailedJobs().count(), equalTo(0));
         // It can return 0
         assertThat(details.getTime(), greaterThanOrEqualTo(0l));
     }
@@ -37,8 +37,8 @@ public class ParallelExecutorTest {
             return TRUE;
         });
         // then
-        assertThat(details.getSuccessfulJobs().getCount(), equalTo(1000));
-        assertThat(details.getFailedJobs().getCount(), equalTo(0));
+        assertThat(details.getSuccessfulJobs().count(), equalTo(1000));
+        assertThat(details.getFailedJobs().count(), equalTo(0));
         assertThat(details.getTime(), greaterThan(0l));
     }
 
@@ -61,24 +61,24 @@ public class ParallelExecutorTest {
             }
         });
         // then
-        assertThat(details.getSuccessfulJobs().getCount(), equalTo(1000));
-        assertThat(details.getFailedJobs().getCount(), equalTo(300));
+        assertThat(details.getSuccessfulJobs().count(), equalTo(1000));
+        assertThat(details.getFailedJobs().count(), equalTo(300));
         assertThat(details.getTotalJobsCount(), equalTo(1300));
         assertThat(details.getJobsPerSecond(), greaterThan(0d));
         // assert successful jobs details
-        assertThat(details.getSuccessfulJobs().getMinTime(),
-            allOf(greaterThan(0l), lessThan(details.getSuccessfulJobs().getAvgTime())));
-        assertThat(details.getSuccessfulJobs().getMaxTime(),
-            allOf(greaterThan(0l), greaterThan(details.getSuccessfulJobs().getAvgTime())));
-        assertThat(details.getSuccessfulJobs().getAvgTime(),
-            allOf(greaterThan(details.getSuccessfulJobs().getMinTime()), lessThan(details.getSuccessfulJobs().getMaxTime())));
+        assertThat(details.getSuccessfulJobs().minTime(),
+            allOf(greaterThan(0l), lessThan(details.getSuccessfulJobs().avgTime())));
+        assertThat(details.getSuccessfulJobs().maxTime(),
+            allOf(greaterThan(0l), greaterThan(details.getSuccessfulJobs().avgTime())));
+        assertThat(details.getSuccessfulJobs().avgTime(),
+            allOf(greaterThan(details.getSuccessfulJobs().minTime()), lessThan(details.getSuccessfulJobs().maxTime())));
         // assert failed jobs details
-        assertThat(details.getFailedJobs().getMinTime(),
-            allOf(greaterThan(0l), lessThan(details.getFailedJobs().getAvgTime())));
-        assertThat(details.getFailedJobs().getMaxTime(),
-            allOf(greaterThan(0l), greaterThan(details.getFailedJobs().getAvgTime())));
-        assertThat(details.getFailedJobs().getAvgTime(),
-            allOf(greaterThan(details.getFailedJobs().getMinTime()), lessThan(details.getFailedJobs().getMaxTime())));
+        assertThat(details.getFailedJobs().minTime(),
+            allOf(greaterThan(0l), lessThan(details.getFailedJobs().avgTime())));
+        assertThat(details.getFailedJobs().maxTime(),
+            allOf(greaterThan(0l), greaterThan(details.getFailedJobs().avgTime())));
+        assertThat(details.getFailedJobs().avgTime(),
+            allOf(greaterThan(details.getFailedJobs().minTime()), lessThan(details.getFailedJobs().maxTime())));
 
         assertThat(details.getTime(), greaterThan(0l));
     }
@@ -94,8 +94,8 @@ public class ParallelExecutorTest {
             throw new InterruptedException();
         });
         // then
-        assertThat(details.getSuccessfulJobs().getCount(), equalTo(0));
-        assertThat(details.getFailedJobs().getCount(), equalTo(10));
+        assertThat(details.getSuccessfulJobs().count(), equalTo(0));
+        assertThat(details.getFailedJobs().count(), equalTo(10));
         assertThat(details.getTime(), greaterThanOrEqualTo(0l));
     }
 

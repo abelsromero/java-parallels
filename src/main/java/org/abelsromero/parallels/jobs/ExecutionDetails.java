@@ -1,21 +1,34 @@
 package org.abelsromero.parallels.jobs;
 
 import lombok.Builder;
-import lombok.Getter;
 
 @Builder
-@Getter
 public class ExecutionDetails {
 
-    private JobsDetails successfulJobs;
-    private JobsDetails failedJobs;
+    private final JobsDetails successfulJobs;
+    private final JobsDetails failedJobs;
 
     // milliseconds
-    private long time;
-    private Double jobsPerSecond;
+    private final long time;
+    private final Double jobsPerSecond;
 
     public int getTotalJobsCount() {
-        return successfulJobs.getCount() + failedJobs.getCount();
+        return successfulJobs.count() + failedJobs.count();
     }
 
+    public JobsDetails getSuccessfulJobs() {
+        return successfulJobs;
+    }
+
+    public JobsDetails getFailedJobs() {
+        return failedJobs;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public Double getJobsPerSecond() {
+        return jobsPerSecond;
+    }
 }
