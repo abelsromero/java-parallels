@@ -13,18 +13,18 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+
+import static org.abelsromero.parallels.scg.CacheTest.Configuration.getEnvInteger;
+import static org.abelsromero.parallels.scg.CacheTest.Configuration.getEnvString;
 
 public class CacheTest {
 
@@ -44,27 +44,46 @@ public class CacheTest {
     }
 
     public static void main(String[] args) {
+        int loop = 1;
 
-        final int workers = 50;
-        final int executions = 100_000;
+        final CacheTest cacheTest = new CacheTest();
+
+        do {
+            cacheTest.run();
+            System.out.println("Completed iteration: " + loop);
+            loop++;
+        } while (true);
+    }
+
+    public void run() {
+
+        final int workers = getEnvInteger("WORKERS").orElse(1);
+        final int executions = getEnvInteger("EXECUTIONS").orElse(100);
+        // test5 = cache
+        // test6 = no cache
+        final String contextPath = getEnvString("CONTEXT").orElse("test5");
+
+        System.out.println("Workers: " + workers);
+        System.out.println("Executions: " + executions);
+        System.out.println("ContextPath: " + contextPath);
+
         // when
         final ParallelExecutor executor = new ParallelExecutor(workers, executions);
         final ExecutionDetails details = executor.run(() -> {
-
-            final CloseableHttpClient httpclient = HttpClients.createDefault();
-            // Builds URLs of 1 to 2KB length
-            final var httpRequest = new HttpGet(buildUrl());
-            httpRequest.addHeader("X-Variance", randomString());
-            httpRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            try (final CloseableHttpClient httpclient = HttpClients.createDefault()) {
+                // Builds URLs of 1 to 2KB length
+                final var httpRequest = new HttpGet(buildUrl(contextPath));
+                httpRequest.addHeader("X-Variance", randomString());
+                httpRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 //            httpRequest.setEntity(randomEntity());
 
-            final var response = httpclient.execute(httpRequest);
-
-            int status = response.getStatusLine().getStatusCode();
+                final var response = httpclient.execute(httpRequest);
+                int status = response.getStatusLine().getStatusCode();
+                Thread.sleep(100l);
 //            debugResponse(response);
-            return status == 200;
+                return status == 200;
+            }
         });
-
 
         // Report
         long time = details.getTime();
@@ -72,20 +91,19 @@ public class CacheTest {
         int fail = details.getFailedJobs().count();
 
         String report = new StringBuilder()
-            .append("======================")
             .append("\n")
-            .append("Time: " + ((float) (time / 1000) / 60))
+            .append("Total time (min): " + ((float) (time / 1000) / 60))
             .append("\n")
-            .append("OK:\t" + success)
+            .append("OK(s):\t" + success)
             .append("\n")
-            .append("ERROR:\t" + fail)
+            .append("ERROR(s):\t" + fail)
             .append("\n")
             .toString();
         System.out.println(report);
 
     }
 
-    private static void debugResponse(CloseableHttpResponse response) throws IOException {
+    private void debugResponse(CloseableHttpResponse response) throws IOException {
         final HttpEntity responseEntity = response.getEntity();
         final String contentType = responseEntity.getContentType().getValue();
         final long contentLength = responseEntity.getContentLength();
@@ -95,13 +113,15 @@ public class CacheTest {
         try (Scanner scanner = new Scanner(is, StandardCharsets.UTF_8.name())) {
             text = scanner.useDelimiter("\\A").next();
         }
+        System.out.println("status: " + response.getStatusLine().getStatusCode());
+        System.out.println("body: " + text);
     }
 
-    private static int randomInt(int start, int end) {
+    private int randomInt(int start, int end) {
         return randomGenerator.nextInt(end - start) + start;
     }
 
-    private static StringEntity randomEntity() throws JsonProcessingException {
+    private StringEntity randomEntity() throws JsonProcessingException {
         var values = Map.of(
             "id", UUID.randomUUID(),
             "timestamp", LocalDateTime.now(),
@@ -111,30 +131,48 @@ public class CacheTest {
         return new StringEntity(objectMapper.writeValueAsString(values), StandardCharsets.UTF_8);
     }
 
-    private static String buildUrl() {
+    private String buildUrl(String contextPath) {
         String value = loremIpsumGenerator.getText(randomInt(1000, 2000));
         String escapedHTML = value.replaceAll(" ", "%20");
-        return "http://localhost:8080/test5/" + randomString() + "/anything/" + escapedHTML;
+//        return "http://localhost:8080/test5/" + randomString() + "/anything/" + escapedHTML;
+        // Use ClusterIP service name within K8s cluster
+        return "http://my-gateway/" + contextPath + "/" + randomString() + "/anything/" + escapedHTML;
     }
 
-    private static String randomString() {
+    private String randomString() {
         return UUID.randomUUID().toString();
+    }
+
+
+    class Configuration {
+        static Optional<Integer> getEnvInteger(String key) {
+            final String value = System.getenv(key);
+            return (value == null) ? Optional.empty() : Optional.of(Integer.parseInt(value));
+        }
+
+        static Optional<String> getEnvString(String key) {
+            return Optional.of(System.getenv(key));
+        }
     }
 
     static class LoremIpsumGenerator {
 
-        public static final String LOREM_FILE = "/lorem_ipsum.txt";
+        public static final String LOREM_FILE = "lorem_ipsum.txt";
 
         private final String content;
 
         LoremIpsumGenerator() throws IOException {
-            URL url = LoremIpsumGenerator.class.getResource(LOREM_FILE);
+            InputStream inputStream = CacheTest.class.getResourceAsStream(LOREM_FILE);
+            if (inputStream == null) {
+                inputStream = LoremIpsumGenerator.class.getResourceAsStream("/" + LOREM_FILE);
+                if (inputStream == null)
+                    throw new RuntimeException("File not found: " + LOREM_FILE);
+            }
 
-            if (url == null)
-                throw new RuntimeException("File not found: " + LOREM_FILE);
-
-            final Path path = Path.of(url.getPath());
-            this.content = Files.readString(path).replaceAll("\n", "");
+            final String text = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+            this.content = text.replaceAll("\n", "");
         }
 
         String getText(int size) {
