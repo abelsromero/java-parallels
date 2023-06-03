@@ -34,6 +34,10 @@ java {
   withSourcesJar()
 }
 
+test {
+  useJUnitPlatform()
+}
+
 publishing {
   publications {
     maven(MavenPublication) {
