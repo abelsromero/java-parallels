@@ -1,0 +1,43 @@
+plugins {
+  id 'java-library'
+  id 'maven-publish'
+  id 'io.freefair.lombok' version '8.0.1'
+}
+
+group = 'org.abelsromero.parallels'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+ext {
+  junitVersion = '5.9.3'
+  lombokVersion = '1.18.28'
+}
+
+dependencies {
+  testImplementation(platform("org.junit:junit-bom:$junitVersion"))
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+  testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+
+lombok {
+  version = "$lombokVersion"
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
+  withJavadocJar()
+  withSourcesJar()
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      from(components.java)
+    }
+  }
+}
