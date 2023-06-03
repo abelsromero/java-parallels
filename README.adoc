@@ -2,10 +2,19 @@
 
 Set of utilities to ease running some common tasks with parallelism.
 
+== Features
+
+* Parallel Executor
+    * Run a job using multiple threads:useful to run small performance and concurrency tests against backends (i.e. API, database...).
+    * Collect statistics: error count, total/min/mav/avg times
+
+* Parallel Files
+    * Move files using multiple threads.
+
 == Usage
 
-The project is available through link:https://jitpack.io/[].
-To use the master version for example, with maven, just:
+The project is available through link:https://jitpack.io/#abelsromero/java-parallels/[].
+To use the `main` branch version for example, with maven, just:
 
 . Add JitPack's repository your `pom.xml`.
 +
@@ -26,20 +35,6 @@ To use the master version for example, with maven, just:
 <dependency>
   <groupId>com.github.abelsromero</groupId>
   <artifactId>java-parallels</artifactId>
-  <version>master-SNAPSHOT</version>
+  <version>main-SNAPSHOT</version>
 </dependency>
 ----
-
-
-== Features
-
-=== ParallelFiles
-
-Allows parallels operations with files.
-For example moving files in groups.
-
-=== ParallelExecutor
-
-Allows running parallel executions of small pieces of code.
-
-This is specially useful to run small performance and concurrency tests against backends (i.e. API, database...).
