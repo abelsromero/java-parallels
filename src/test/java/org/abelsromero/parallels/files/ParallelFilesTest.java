@@ -16,10 +16,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class ParallelFilesTest {
+class ParallelFilesTest {
 
     @Test
-    public void should_fail_if_destination_is_not_a_directory() {
+    void should_fail_if_destination_is_not_a_directory() {
         // given
         File file = getFileFromClasspath("ruby.png");
         // when
@@ -32,7 +32,7 @@ public class ParallelFilesTest {
     }
 
     @Test
-    public void should_move_a_single_file() throws InterruptedException {
+    void should_move_a_single_file() throws InterruptedException {
         // given
         final File source = getFileFromClasspath("ruby.png");
         final File file = new File(getTestDirectory(), source.getName());
@@ -48,7 +48,7 @@ public class ParallelFilesTest {
     }
 
     @Test
-    public void should_move_multiple_files() throws InterruptedException {
+    void should_move_multiple_files() throws InterruptedException {
         // given
         final String testDirectory = getTestDirectory();
         final File[] sources = new File[]{

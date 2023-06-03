@@ -11,6 +11,9 @@ Set of utilities to ease running some common tasks with parallelism.
 * Parallel Files
     * Move files using multiple threads.
 
+* Configuration
+    * Utils to load values from environment variables or Java properties.
+
 == Usage
 
 The project is available through link:https://jitpack.io/#abelsromero/java-parallels/[].

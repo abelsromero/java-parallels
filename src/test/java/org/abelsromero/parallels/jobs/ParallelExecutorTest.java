@@ -8,11 +8,11 @@ import java.util.concurrent.Callable;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ParallelExecutorTest {
+class ParallelExecutorTest {
 
     // aka. you only had one job
     @Test
-    public void should_run_a_single_job() {
+    void should_run_a_single_job() {
         // when
         final ParallelExecutor executor = new ParallelExecutor(1, 1);
         final ExecutionDetails details = executor.run(() -> {
@@ -26,7 +26,7 @@ public class ParallelExecutorTest {
     }
 
     @Test
-    public void should_run_1000_successful_executions() {
+    void should_run_1000_successful_executions() {
         // given
         final int workers = 1;
         final int executions = 1000;
@@ -43,7 +43,7 @@ public class ParallelExecutorTest {
     }
 
     @Test
-    public void should_run_1000_successful_and_300_failed_executions() {
+    void should_run_1000_successful_and_300_failed_executions() {
         // given
         final int workers = 8;
         final int executions = 1000;
@@ -87,7 +87,7 @@ public class ParallelExecutorTest {
     }
 
     @Test
-    public void should_not_blow_when_callback_throws_exceptions_and_count_that_as_failed() {
+    void should_not_blow_when_callback_throws_exceptions_and_count_that_as_failed() {
         // given
         final int workers = 2;
         final int executions = 10;
