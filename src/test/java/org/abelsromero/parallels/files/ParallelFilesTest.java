@@ -1,7 +1,8 @@
 package org.abelsromero.parallels.files;
 
 import lombok.SneakyThrows;
-import org.junit.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,13 +18,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ParallelFilesTest {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void should_fail_if_destination_is_not_a_directory() throws InterruptedException {
+    @Test
+    public void should_fail_if_destination_is_not_a_directory() {
         // given
         File file = getFileFromClasspath("ruby.png");
         // when
         ParallelFiles files = new ParallelFiles(4);
-        files.moveFiles(file, file);
+
+        Throwable throwable = Assertions.catchThrowable(() -> files.moveFiles(file, file));
+
+        assertThat(throwable)
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
