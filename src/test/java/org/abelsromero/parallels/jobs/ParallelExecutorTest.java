@@ -1,14 +1,12 @@
 package org.abelsromero.parallels.jobs;
 
-
 import lombok.SneakyThrows;
 import org.junit.Test;
 
 import java.util.concurrent.Callable;
 
 import static java.lang.Boolean.TRUE;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ParallelExecutorTest {
 
@@ -17,12 +15,14 @@ public class ParallelExecutorTest {
     public void should_run_a_single_job() {
         // when
         final ParallelExecutor executor = new ParallelExecutor(1, 1);
-        final ExecutionDetails details = executor.run(() -> TRUE);
+        final ExecutionDetails details = executor.run(() -> {
+            Thread.sleep(10);
+            return TRUE;
+        });
         // then
-        assertThat(details.getSuccessfulJobs().count(), equalTo(1));
-        assertThat(details.getFailedJobs().count(), equalTo(0));
-        // It can return 0
-        assertThat(details.getTime(), greaterThanOrEqualTo(0l));
+        assertThat(details.getSuccessfulJobs().count()).isEqualTo(1);
+        assertThat(details.getFailedJobs().count()).isEqualTo(0);
+        assertThat(details.getTime()).isGreaterThanOrEqualTo(10);
     }
 
     @Test
@@ -33,13 +33,13 @@ public class ParallelExecutorTest {
         // when
         final ParallelExecutor executor = new ParallelExecutor(workers, executions);
         final ExecutionDetails details = executor.run(() -> {
-            Thread.sleep(1l);
+            Thread.sleep(1);
             return TRUE;
         });
         // then
-        assertThat(details.getSuccessfulJobs().count(), equalTo(1000));
-        assertThat(details.getFailedJobs().count(), equalTo(0));
-        assertThat(details.getTime(), greaterThan(0l));
+        assertThat(details.getSuccessfulJobs().count()).isEqualTo(1000);
+        assertThat(details.getFailedJobs().count()).isEqualTo(0);
+        assertThat(details.getTime()).isGreaterThan(0);
     }
 
     @Test
@@ -49,38 +49,41 @@ public class ParallelExecutorTest {
         final int executions = 1000;
         // when
         final ParallelExecutor executor = new ParallelExecutor(workers, executions + 300);
-        final ExecutionDetails details = executor.run(new Callable<Boolean>() {
+        final ExecutionDetails details = executor.run(new Callable<>() {
             private int counter = -1;
 
             @Override
             @SneakyThrows
             public synchronized Boolean call() {
                 counter++;
-                Thread.sleep(20l);
+                Thread.sleep(20);
                 return counter < 1000;
             }
         });
         // then
-        assertThat(details.getSuccessfulJobs().count(), equalTo(1000));
-        assertThat(details.getFailedJobs().count(), equalTo(300));
-        assertThat(details.getTotalJobsCount(), equalTo(1300));
-        assertThat(details.getJobsPerSecond(), greaterThan(0d));
-        // assert successful jobs details
-        assertThat(details.getSuccessfulJobs().minTime(),
-            allOf(greaterThan(0l), lessThan(details.getSuccessfulJobs().avgTime())));
-        assertThat(details.getSuccessfulJobs().maxTime(),
-            allOf(greaterThan(0l), greaterThan(details.getSuccessfulJobs().avgTime())));
-        assertThat(details.getSuccessfulJobs().avgTime(),
-            allOf(greaterThan(details.getSuccessfulJobs().minTime()), lessThan(details.getSuccessfulJobs().maxTime())));
-        // assert failed jobs details
-        assertThat(details.getFailedJobs().minTime(),
-            allOf(greaterThan(0l), lessThan(details.getFailedJobs().avgTime())));
-        assertThat(details.getFailedJobs().maxTime(),
-            allOf(greaterThan(0l), greaterThan(details.getFailedJobs().avgTime())));
-        assertThat(details.getFailedJobs().avgTime(),
-            allOf(greaterThan(details.getFailedJobs().minTime()), lessThan(details.getFailedJobs().maxTime())));
+        final JobsDetails successfulJobs = details.getSuccessfulJobs();
+        final JobsDetails failedJobs = details.getFailedJobs();
 
-        assertThat(details.getTime(), greaterThan(0l));
+        assertThat(successfulJobs.count()).isEqualTo(1000);
+        assertThat(failedJobs.count()).isEqualTo(300);
+        assertThat(details.getTotalJobsCount()).isEqualTo(1300);
+        assertThat(details.getJobsPerSecond()).isGreaterThan(0);
+        // assert successful jobs details
+        assertThat(successfulJobs.minTime())
+            .isGreaterThan(0)
+            .isLessThan(successfulJobs.avgTime());
+        assertThat(successfulJobs.maxTime())
+            .isGreaterThan(0)
+            .isGreaterThan(successfulJobs.avgTime());
+        // assert failed jobs details
+        assertThat(failedJobs.minTime())
+            .isGreaterThan(0)
+            .isLessThan(failedJobs.avgTime());
+        assertThat(failedJobs.maxTime())
+            .isGreaterThan(0)
+            .isGreaterThan(failedJobs.avgTime());
+
+        assertThat(details.getTime()).isGreaterThan(0);
     }
 
     @Test
@@ -94,9 +97,8 @@ public class ParallelExecutorTest {
             throw new InterruptedException();
         });
         // then
-        assertThat(details.getSuccessfulJobs().count(), equalTo(0));
-        assertThat(details.getFailedJobs().count(), equalTo(10));
-        assertThat(details.getTime(), greaterThanOrEqualTo(0l));
+        assertThat(details.getSuccessfulJobs().count()).isEqualTo(0);
+        assertThat(details.getFailedJobs().count()).isEqualTo(10);
+        assertThat(details.getTime()).isGreaterThanOrEqualTo(0);
     }
-
 }

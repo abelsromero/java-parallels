@@ -1,8 +1,6 @@
 package org.abelsromero.parallels.files;
 
-
 import lombok.SneakyThrows;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -14,10 +12,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class ParallelFilesTest {
 
@@ -36,14 +32,14 @@ public class ParallelFilesTest {
         final File source = getFileFromClasspath("ruby.png");
         final File file = new File(getTestDirectory(), source.getName());
         copy(source, file);
-        Assert.assertThat(file.exists(), equalTo(TRUE));
+        assertThat(file).exists();
         final File destination = new File(getTestDirectory());
         // when
         ParallelFiles pfiles = new ParallelFiles(1);
         pfiles.moveFiles(destination, file);
         // then
-        assertThat(file.exists(), equalTo(FALSE));
-        assertThat(new File(destination, file.getName()).exists(), equalTo(TRUE));
+        assertThat(file).doesNotExist();
+        assertThat(new File(destination, file.getName())).exists();
     }
 
     @Test
@@ -66,8 +62,8 @@ public class ParallelFilesTest {
         pfiles.moveFiles(destination, files);
         // then
         for (File f : files) {
-            assertThat(f.exists(), equalTo(FALSE));
-            assertThat(new File(destination, f.getName()).exists(), equalTo(TRUE));
+            assertThat(f).doesNotExist();
+            assertThat(new File(destination, f.getName())).exists();
         }
     }
 
