@@ -21,7 +21,7 @@ To use the `main` branch version for example, with maven, just:
 
 . Add JitPack's repository your `pom.xml`.
 +
-[source,xml]
+[,xml]
 ----
 <repositories>
   <repository>
@@ -33,7 +33,7 @@ To use the `main` branch version for example, with maven, just:
 
 . The projects `master` dependency.
 +
-[source,xml]
+[,xml]
 ----
 <dependency>
   <groupId>com.github.abelsromero</groupId>
@@ -41,3 +41,59 @@ To use the `main` branch version for example, with maven, just:
   <version>main-SNAPSHOT</version>
 </dependency>
 ----
+
+== Docker build
+
+In case of issues with the dependency, you can install it locally:
+
+. Clone repo
+. run `./gradlew publishToMavenLocal`
+
+Then, create a project importing the dependency as local.
+For example, in Gradle
+
+[,groovy]
+----
+repositories {
+    mavenLocal()
+----
+
+[,groovy]
+----
+dependencies {
+  implementation 'org.abelsromero.parallels:java-parallels:1.0.0-SNAPSHOT'
+}
+----
+
+Finally, you can package your project with https://paketo.io/docs/howto/java/[Paketo Buildpack].
+
+ pack build demo-parallels --path build/libs/MY_JAR.jar
+
+Run your image locally to validate it's correctly created.
+
+ docker run --rm demo-parallels:latest
+
+=== Kubernetes deployment
+
+Here are some advices to run your parallel executions in Kubernetes.
+
+* Deployment creation
+
+ kubectl create deployment parallels --image demo
+
+[NOTE]
+====
+Remember if you want to use https://kind.sigs.k8s.io[KinD] for testing:
+
+* Do not tag your image with `latest`.
+* Load the image into the cluster with `kind load docker-image parallels:1.0.0`.
+====
+
+* Hot execution configuration
+
+Load your configurations from environment variables, so that you can change them with
+
+ kubectl set env deploy parallels MY_VAR=MY_VALUE
+
+When updated, the pods will automatically restart with the new options.
+Consider printing the configuration on the process start to validate them.
