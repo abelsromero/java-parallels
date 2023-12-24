@@ -5,7 +5,7 @@ Set of utilities to ease running some common tasks with parallelism.
 == Features
 
 * Parallel Executor
-    * Run a job using multiple threads:useful to run small performance and concurrency tests against backends (i.e. API, database...).
+    * Run a job using multiple threads: useful to run small performance and concurrency tests against backends (i.e. API, database...).
     * Collect statistics: error count, total/min/mav/avg times
 
 * Parallel Files
