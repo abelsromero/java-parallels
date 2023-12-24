@@ -34,17 +34,4 @@ class DefaultConcurrentRunner implements ConcurrentRunner<JobSummary> {
         executor.shutdown();
         executor.awaitTermination(60, TimeUnit.MINUTES);
     }
-
-    // TODO do we need to handle exceptions
-//    private record SynchronizedCallable<T>(Callable<T> task) implements Callable<T> {
-//
-//        @Override
-//        public T call() {
-//            try {
-//                return task.call();
-//            } catch (Exception e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//    }
 }

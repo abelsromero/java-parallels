@@ -8,21 +8,21 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
-class PlatformThreadsTasksRunner implements TasksRunner {
+class DefaultTasksRunner implements TasksRunner {
 
-    private final ConcurrentRunner executor;
-    private final int executions;
+    private final ConcurrentRunner concurrentRunner;
+    private final int tasksCount;
 
-    PlatformThreadsTasksRunner(ConcurrentRunner executor, int executions) {
-        this.executor = executor;
-        this.executions = executions;
+    DefaultTasksRunner(ConcurrentRunner concurrentRunner, int tasksCount) {
+        this.concurrentRunner = concurrentRunner;
+        this.tasksCount = tasksCount;
     }
 
     @SneakyThrows
     public ExecutionDetails run(Callable<Boolean> callable) {
 
         final List<Callable<JobSummary>> callables = LongStream
-            .rangeClosed(1, executions)
+            .rangeClosed(1, tasksCount)
             .mapToObj(i -> (Callable<JobSummary>) () -> {
                 long time = System.currentTimeMillis();
                 Boolean succeed = Boolean.FALSE;
@@ -37,10 +37,10 @@ class PlatformThreadsTasksRunner implements TasksRunner {
             .collect(Collectors.toList());
 
         long startTime = System.currentTimeMillis();
-        final List<Future<JobSummary>> results = executor.invokeAll(callables);
-        executor.close();
+        final List<Future<JobSummary>> results = concurrentRunner.invokeAll(callables);
+        concurrentRunner.close();
 
-        return ResultsProcessor.processExecutionResults(results, executions, System.currentTimeMillis() - startTime);
+        return ResultsProcessor.processExecutionResults(results, tasksCount, System.currentTimeMillis() - startTime);
     }
 }
 
