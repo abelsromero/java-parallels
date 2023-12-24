@@ -5,30 +5,30 @@ import lombok.Builder;
 @Builder
 public class ExecutionDetails {
 
-    private final JobsDetails successfulJobs;
-    private final JobsDetails failedJobs;
+    private final TasksDetails successfulTasks;
+    private final TasksDetails failedTasks;
 
     // milliseconds
     private final long time;
-    private final Double jobsPerSecond;
+    private final Double tasksPerSecond;
 
-    public int getTotalJobsCount() {
-        return successfulJobs.count() + failedJobs.count();
+    public int getTotalTasksCount() {
+        return successfulTasks.count() + failedTasks.count();
     }
 
-    public JobsDetails getSuccessfulJobs() {
-        return successfulJobs;
+    public TasksDetails getSuccessfulTasks() {
+        return successfulTasks;
     }
 
-    public JobsDetails getFailedJobs() {
-        return failedJobs;
+    public TasksDetails getFailedTasks() {
+        return failedTasks;
     }
 
     public long getTime() {
         return time;
     }
 
-    public Double getJobsPerSecond() {
-        return jobsPerSecond;
+    public Double getTasksPerSecond() {
+        return tasksPerSecond;
     }
 }
