@@ -14,7 +14,7 @@ abstract class ParallelExecutorTest {
     @Test
     void should_run_a_single_job() {
         // when
-        final ParallelExecutor executor = ParallelExecutor.platformThreads(1, 1);
+        final ParallelExecutor executor = executor(1, 1);
         final ExecutionDetails details = executor.run(() -> {
             Thread.sleep(10);
             return TRUE;
@@ -31,7 +31,7 @@ abstract class ParallelExecutorTest {
         final int workers = 1;
         final int executions = 1000;
         // when
-        final ParallelExecutor executor = ParallelExecutor.platformThreads(workers, executions);
+        final ParallelExecutor executor = executor(workers, executions);
         final ExecutionDetails details = executor.run(() -> {
             Thread.sleep(1);
             return TRUE;
@@ -48,7 +48,7 @@ abstract class ParallelExecutorTest {
         final int workers = 8;
         final int executions = 1000;
         // when
-        final ParallelExecutor executor = ParallelExecutor.platformThreads(workers, executions + 300);
+        final ParallelExecutor executor = executor(workers, executions + 300);
         final ExecutionDetails details = executor.run(new Callable<>() {
             private int counter = -1;
 
@@ -56,7 +56,7 @@ abstract class ParallelExecutorTest {
             @SneakyThrows
             public synchronized Boolean call() {
                 counter++;
-                Thread.sleep(20);
+                Thread.sleep(10);
                 return counter < 1000;
             }
         });
@@ -92,7 +92,7 @@ abstract class ParallelExecutorTest {
         final int workers = 2;
         final int executions = 10;
         // when
-        final ParallelExecutor executor = ParallelExecutor.platformThreads(workers, executions);
+        final ParallelExecutor executor = executor(workers, executions);
         final ExecutionDetails details = executor.run(() -> {
             throw new InterruptedException();
         });
@@ -101,4 +101,6 @@ abstract class ParallelExecutorTest {
         assertThat(details.getFailedJobs().count()).isEqualTo(10);
         assertThat(details.getTime()).isGreaterThanOrEqualTo(0);
     }
+
+    abstract ParallelExecutor executor(int workers, int executions);
 }
