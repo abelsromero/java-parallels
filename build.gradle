@@ -1,7 +1,8 @@
 plugins {
   id 'java-library'
   id 'maven-publish'
-  id 'io.freefair.lombok' version '8.4'
+  id 'io.freefair.lombok'
+  id 'org.graalvm.buildtools.native'
 }
 
 group = 'org.abelsromero.parallels'
@@ -36,7 +37,7 @@ java {
   withSourcesJar()
 }
 
-test {
+tasks.named('test', Test) {
   useJUnitPlatform()
 }
 
@@ -45,5 +46,12 @@ publishing {
     maven(MavenPublication) {
       from(components.java)
     }
+  }
+}
+
+graalvmNative {
+  // https://github.com/graalvm/native-build-tools/issues/554
+  agent {
+    defaultMode = "standard"
   }
 }

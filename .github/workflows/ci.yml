@@ -14,15 +14,51 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build JVM
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        java:
+          - 17
+          - 19
+          - 21
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: ${{ matrix.java }}
           distribution: 'temurin'
       - name: assemble
         run: ./gradlew assemble
       - name: test
         run: ./gradlew test
+  build-native:
+    name: Build Native
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21.0.1'
+          distribution: 'graalvm-community'
+      - name: gradle env
+        run: ./gradlew -version
+      - name: build binary
+        run: ./gradlew nativeCompile
+      - name: test
+        run: ./gradlew nativeTest

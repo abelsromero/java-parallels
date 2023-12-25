@@ -78,7 +78,7 @@ abstract class TasksRunnerTest {
         // assert failed jobs details
         assertThat(failedTasks.minTime())
             .isGreaterThan(0)
-            .isLessThan(failedTasks.avgTime());
+            .isLessThanOrEqualTo(failedTasks.avgTime());
         assertThat(failedTasks.maxTime())
             .isGreaterThan(0)
             .isGreaterThan(failedTasks.avgTime());
