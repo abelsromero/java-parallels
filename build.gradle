@@ -49,3 +49,9 @@ publishing {
   }
 }
 
+graalvmNative {
+  // https://github.com/graalvm/native-build-tools/issues/554
+  agent {
+    defaultMode = "standard"
+  }
+}

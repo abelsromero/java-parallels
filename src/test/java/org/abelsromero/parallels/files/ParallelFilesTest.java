@@ -5,8 +5,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
@@ -18,10 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ParallelFilesTest {
 
-    private static final String RUBY_PNG = "/ruby.png";
-    private static final String SAMPLE_PDF = "/sample.pdf";
-    private static final String LOREM_IPSUM_TXT = "/lorem_ipsum.txt";
-
+    private static final String RUBY_PNG = "ruby.png";
+    private static final String SAMPLE_PDF = "sample.pdf";
+    private static final String LOREM_IPSUM_TXT = "lorem_ipsum.txt";
 
     @Test
     void should_fail_if_destination_is_not_a_directory() {
@@ -79,10 +76,8 @@ class ParallelFilesTest {
 
     @SneakyThrows
     private File getFileFromClasspath(String path) {
-        final URL resource = this.getClass().getResource(path);
-        if (resource == null)
-            throw new FileNotFoundException("classpath:" + path);
-        return new File(resource.toURI());
+        // Load from folder to avoid configuring resources for native tests
+        return new File("src/test/resources/", path);
     }
 
     private String getTestDirectory() {
