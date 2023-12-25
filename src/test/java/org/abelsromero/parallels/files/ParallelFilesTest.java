@@ -18,10 +18,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ParallelFilesTest {
 
+    private static final String RUBY_PNG = "/ruby.png";
+    private static final String SAMPLE_PDF = "/sample.pdf";
+    private static final String LOREM_IPSUM_TXT = "/lorem_ipsum.txt";
+
+
     @Test
     void should_fail_if_destination_is_not_a_directory() {
         // given
-        File file = getFileFromClasspath("ruby.png");
+        File file = getFileFromClasspath(RUBY_PNG);
         // when
         ParallelFiles files = new ParallelFiles(4);
 
@@ -34,7 +39,7 @@ class ParallelFilesTest {
     @Test
     void should_move_a_single_file() throws InterruptedException {
         // given
-        final File source = getFileFromClasspath("ruby.png");
+        final File source = getFileFromClasspath(RUBY_PNG);
         final File file = new File(getTestDirectory(), source.getName());
         copy(source, file);
         assertThat(file).exists();
@@ -52,9 +57,9 @@ class ParallelFilesTest {
         // given
         final String testDirectory = getTestDirectory();
         final File[] sources = new File[]{
-            getFileFromClasspath("ruby.png"),
-            getFileFromClasspath("sample.pdf"),
-            getFileFromClasspath("lorem_ipsum.txt")
+            getFileFromClasspath(RUBY_PNG),
+            getFileFromClasspath(SAMPLE_PDF),
+            getFileFromClasspath(LOREM_IPSUM_TXT)
         };
         final File[] files = new File[sources.length];
         for (int i = 0; i < sources.length; i++) {
@@ -74,7 +79,7 @@ class ParallelFilesTest {
 
     @SneakyThrows
     private File getFileFromClasspath(String path) {
-        final URL resource = this.getClass().getClassLoader().getResource(path);
+        final URL resource = this.getClass().getResource(path);
         if (resource == null)
             throw new FileNotFoundException("classpath:" + path);
         return new File(resource.toURI());

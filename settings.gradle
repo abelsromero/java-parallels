@@ -1,1 +1,12 @@
+pluginManagement {
+  plugins {
+    id 'io.freefair.lombok' version '8.4'
+    id 'org.graalvm.buildtools.native' version '0.9.28'
+  }
+  repositories {
+    mavenCentral()
+    gradlePluginPortal()
+  }
+}
+
 rootProject.name = 'java-parallels'
