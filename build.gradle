@@ -13,7 +13,7 @@ repositories {
 }
 
 ext {
-  junitVersion = '5.10.1'
+  junitVersion = '5.10.2'
   lombokVersion = '1.18.30'
 }
 
